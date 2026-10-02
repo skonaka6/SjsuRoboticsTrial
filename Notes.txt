@@ -50,6 +50,9 @@ Used tutorial 1 to practice Examples > Adafruit MPU6050 > basic_readings example
 - The reset button on the Nano is very useful. That thing that looks like a button on the MPU is not a button.
 - code from tutorial 2 is not likely to match up with what I will be using since it uses a different library (not adafruit’s) but still has a lot more code segments that may have useful equivalents to look up and use later.
 
+## Motion Detection example (Adafruit MPU6050 code example)
+Similar to basic_readings example, but does not read constantly on loop. Instead only reports when changes are detected exceeding thresholds set in the setup() function. Consider using these functions if the ones from basic_readings don’t mesh well math-and-frequency-wise with what the turret needs
+
 
 
 
