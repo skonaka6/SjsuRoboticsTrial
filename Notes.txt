@@ -1,4 +1,4 @@
-Setting up project environment (Arduino IDE)
+﻿Setting up project environment (Arduino IDE)
 
 Setup:
 1) Download App executable from https://www.arduino.cc/en/software/, give -x perms if needed
