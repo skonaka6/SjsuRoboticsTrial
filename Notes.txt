@@ -1,4 +1,4 @@
-﻿Setting up project environment (Arduino IDE)
+﻿# Setting up project environment (Arduino IDE)
 
 Setup:
 1) Download App executable from https://www.arduino.cc/en/software/, give -x perms if needed
@@ -35,3 +35,17 @@ Giving Access to Serial Ports
 google search says to give User access to Serial Ports
 sudo usermod -a -G dialout $USER
 (Uncertain if this was the issue I had the first time)
+
+
+
+# MPU 6050 tutorial
+tutorial 1: https://www.youtube.com/watch?v=1gNNoFwu9Nc
+tutorial 2: https://www.youtube.com/watch?v=SVI_NldMjlE
+
+Used tutorial 1 to practice Examples > Adafruit MPU6050 > basic_readings example. Learned the following:
+- MPU6050 communicates via I2C protocol, using Serial DAta line SDA connected to pin A4, and Serial CLock connected to pin A5
+- MPU Motion Processing Unit is an IMU Inertial Measurement Unit with 3 gyroscopes and 3 accelerometers
+- MPU (and other external boards) don’t need a resistor component connecting because they have built in resistors and have “weak pull-up resistors” (something to read about later)
+- The Serial Monitor (seemingly the microcontroller’s equivalent for an output terminal) MUST be set to a matching baud rate or serial output will be gibberish
+- The reset button on the Nano is very useful. That thing that looks like a button on the MPU is not a button.
+- code from tutorial 2 is not likely to match up with what I will be using since it uses a different library (not adafruit’s) but still has a lot more code segments that may have useful equivalents to look up and use later.
