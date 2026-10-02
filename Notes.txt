@@ -1,0 +1,37 @@
+Setting up project environment (Arduino IDE)
+
+Setup:
+1) Download App executable from https://www.arduino.cc/en/software/, give -x perms if needed
+2) Connect board via usb c*, LED on board should turn on
+3) In IDE, select Tools > Processor: "ATmega328P (Old Bootloader), Tools > Boards: "Arduino Nano", and Tools > Port: "/dev/ttyUSB0"**
+4) Add libraries (for this project, Adafruit MPU6050)
+5) Ready to code. Click Verify and then Upload. Example code available in File > Examples > ... Website documentation available at https://docs.arduino.cc/built-in-examples/
+6) Set Serial Monitor baud rate to be equal to the 6050's baud rate or output will be gibberish
+
+
+*Some sites and quick google search say to use Mini B usb, but it seems that is for older products and recent years have implemented USB C.
+**(Linux) If port doesn't show up, even after reconnecting the board, it's probably needs permission and BRLTTY may be conflicting. See section on Removing BRLTTY Conflict. Also section on Giving Access to Serial Ports
+Removing BRLTTY conflict
+Linux comes with a background service BRLTTY for braille display that will hog the port an Arduino Nano uses. Uninstall or disable+mask the service.
+https://support.arduino.cc/hc/en-us/articles/29350073597468-Resolve-BRLTTY-conflict-on-Linux
+In terminal:
+# See if service is running
+$ ps -C brltty
+# See if BRLTTY is kicking out the board
+$ dmesg
+ftdi_sio 3-4:1.0: FTDI USB Serial Device converter detected
+usb 3-4: FTDI USB Serial Device converter now attached to ttyUSB0
+usbfs: interface 0 claimed by ftdi_sio while 'brltty' sets config #1
+ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+# if uninstalling completely, use following and reconnect the board
+sudo apt remove brltty
+# if only disabling, run these 4 commands and reconnect
+sudo systemctl stop brltty-udev.service
+sudo systemctl mask brltty-udev.service
+sudo systemctl stop brltty.service
+sudo systemctl disable brltty.service
+
+Giving Access to Serial Ports
+google search says to give User access to Serial Ports
+sudo usermod -a -G dialout $USER
+(Uncertain if this was the issue I had the first time)
