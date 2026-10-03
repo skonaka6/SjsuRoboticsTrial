@@ -2,6 +2,7 @@ TODO items
 Accelerometer-based rotation cannot fully rotate a direction when reduced by offset due to MPU producing maximum value at vertical alignment.
 Create circuit diagrams for Gimbal and Turret
 Merge branches to main. Merge Gimbal before Turret (Project_Deliverable), and make sure Gimbal keeps its unedited .ino
+Write measureMPUerror() to external file to view during runtime (it's hard to view in Serial Monitor)
 
 
 

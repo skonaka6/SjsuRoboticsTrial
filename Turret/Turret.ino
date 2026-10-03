@@ -5,6 +5,7 @@
 
 const int MPU = 0x68; // MPU I2C address. Confirm with i2c_scanner example
 float gyrox, gyroy, gyroz, accelx, accely, accelz;
+float errgx, errgy, errgz, errax, erray, erraz; // inherent error measurements of the MPU
 float xrotation, yrotation, zrotation;
 float deltaTime, prevTime = 0;
 Servo servo1;
@@ -32,6 +33,7 @@ void setup(void) {
   Wire.endTransmission(true);
   servo1.attach(9);
   servo2.attach(10);
+  measureMPUerror(200); // 200 samples
   Serial.println("Setup Complete");
   delay(100);
   /*
@@ -74,7 +76,7 @@ void loop() {
   if (dataWindowIndex >= DATA_WINDOW_SIZE) dataWindowIndex = 0; // loop back to beginning of window
   /* Print out the values */
   printAccelVariables();
-  // printGyroVariables();
+  printGyroVariables();
   printStats();
   if (Serial.available()){
     offset = Serial.parseInt();
@@ -99,7 +101,7 @@ void loop() {
 }
 
 void printGyroVariables(){
-  Serial.println();
+  Serial.print("gyro:\n");
   Serial.print("x: ");
   Serial.print(xrotation);
   Serial.print("\t");
@@ -115,14 +117,13 @@ void printGyroVariables(){
 }
 
 void printAccelVariables(){
-  Serial.println();
+  Serial.print("accel:\n");
   Serial.print("x: ");
   Serial.println(accelx);
   Serial.print("y: ");
   Serial.println(accely);
   Serial.print("z: ");
   Serial.println(accelz);
-
 }
 
 void printStats(){
@@ -145,4 +146,58 @@ float calculateSTD(int (*arr)[DATA_WINDOW_SIZE]){
   double sum = 0.0;
   for (int i=0; i<DATA_WINDOW_SIZE; i++) sum += sq((*arr)[i] - m);
   return sqrt(sum / DATA_WINDOW_SIZE);
+}
+
+// Collect measurementCount samples and average out to estimate the
+//  inherent error in measurement of the MPU. It doesn't quite report
+//  0 acceleration and 9.8 m/s^2 at rest, so we need to set some offsets
+//  as errgx/y/z and errax/y/z to correct for it.
+// Do not move the MPU while this is running (in setup())
+void measureMPUerror(int measurementCount){
+  // Normally we compute average as
+  //  sum = n1 + n2 + n3...;
+  //  mean = sum / N;
+  // but this may overflow the variable storing sum if n_i is a large number.
+  // Instead we can use
+  //  sum += n1 / N;
+  //  sum += n2 / N; ...
+  // probably increasing time (many div operations), but that cost is probably negligible here
+  double meax = 0, meay = 0, meaz = 0, megx = 0, megy = 0, megz = 0 ; // "M.ean of E.rror A.ccel X."
+  float ax, ay, az, gx, gy, gz;
+  for (int i=0; i<measurementCount; i++){
+    Wire.beginTransmission(MPU);
+    Wire.write(0x3B); // address of ACCEL_XOUT_H
+    Wire.endTransmission(false);
+    Wire.requestFrom(MPU, 6+2+6,true); // read 6 bytes/registers of ACCEL, 2 bytes TEMP, 6 bytes GYRO
+    //consume signal
+    ax = (Wire.read() << 8 | Wire.read());
+    ay = (Wire.read() << 8 | Wire.read());
+    az = (Wire.read() << 8 | Wire.read());
+    Wire.read(); // unused TEMP
+    Wire.read(); // unused TEMP
+    gx = (Wire.read() << 8 | Wire.read());
+    gy = (Wire.read() << 8 | Wire.read());
+    gz = (Wire.read() << 8 | Wire.read());
+    // divide and add to rolling Mean
+    meax += ax / measurementCount; // TODO: This formula does not work on a (seconds^0) measurement. Use the atan() formula instead
+    meay += ay / measurementCount;
+    meaz += az / measurementCount;
+    megx += gx / measurementCount;
+    megy += gy / measurementCount;
+    megz += gz / measurementCount;
+  }
+  Serial.println("Error measurements:");
+  Serial.print("ax (UNFINISHED): ");
+  Serial.println(meax);
+  Serial.print("ay (UNFINISHED): ");
+  Serial.println(meay);
+  Serial.print("az (UNFINISHED): ");
+  Serial.println(meaz);
+  Serial.print("gx: ");
+  Serial.println(megx);
+  Serial.print("gy: ");
+  Serial.println(megy);
+  Serial.print("gz: ");
+  Serial.println(megz);
+  Serial.println();
 }
