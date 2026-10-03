@@ -80,3 +80,23 @@ Video notes:
 Other notes
 - Normally you want to power the arduino with an external (battery) source, the arduino may have the voltage but usually lacks the amperage to move loads or larger servos (exception: Is probably fine using a micro servo with no load, for short periods)
 - Yes you need the screw to attach the arm (“servo horn”). Use the small screw (https://www.youtube.com/watch?v=fbq6pyq1x4U)
+
+
+
+
+# Learning Input (from Serial Monitor)
+https://www.circuitbasics.com/how-to-read-user-input-from-the-arduino-serial-monitor/
+Serial.available()
+returns # bytes available to read from serial port. Returns 0 when there is no user input. When there is input, read information with one of the following:
+Serial.parseInt()
+Serial.parseFloat()
+Serial.readString()
+can pass data to a variable
+Remember to Serial.begin(baud) in setup()
+Remember to set Message to No Line Ending
+
+Made a simple program that runs on the arduino using this tutorial. Waits for a user to update the integer variable and then spits it back at them. Program counts dots on the terminal while waiting for user input. I noticed that there is a significant pause in the program right after user input. Seems to occur around parsing user input. Something interesting to look into, a potential optimization.
+
+According to
+https://arduino.stackexchange.com/questions/22762/why-does-the-arduino-respond-so-slow-to-serial-input
+the reason for the program's hiccup is that Serial.parseInt() uses a timeout to find the end of the data its given. The pause is coded in. Looks like writing the parsing and stoi code yourself is a good workaround.
