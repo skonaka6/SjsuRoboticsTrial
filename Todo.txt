@@ -3,6 +3,7 @@ Accelerometer-based rotation cannot fully rotate a direction when reduced by off
 Create circuit diagrams for Gimbal and Turret
 Merge branches to main. Merge Gimbal before Turret (Project_Deliverable), and make sure Gimbal keeps its unedited .ino
 Write measureMPUerror() to external file to view during runtime (it's hard to view in Serial Monitor)
+(opt) Dope the gyroscope servo position control with accelerometer data to slightly auto correct positioning
 
 
 
