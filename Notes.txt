@@ -79,6 +79,22 @@ Note that Wire.read() resolves into a single byte read from Wire, which is why w
 At Full Scale Range +-2g, divide accelerometer readings by 16384 LSB/g
 At Full Scale Range +-250 */s, divide gyro readings by 131.0 LSB/degree/s
 I don't understand the math behind this yet, or what LSB Sensitivity actually represents (just leave it on default in setup for now()), but these table is enough to work with for now. Add as research question post-project
-6 - Implement error correction or acceleration anti-drift or both. Gyro error is actually instantly detrimental
+6 - implement error correction or accelerometer anti-drifting or both.
+Drift will nudge the servo to its range limit in about 2 minutes, even just leaving the board untouched. 
 
 Tutorial and sample code cover minimizing drift and calculating roll and pitch from accelerometer data with an atan() func. I will try opting out of these parts for now to keep code lean since we don't require a robust solution at the moment.
+
+
+#### Solving the Gimbal with accel measurements
+This commit follows the same design logic as the sketch version before transitioning away from the MPU library:
+1 - Read accelerometer measurement (will only need and use one axis. Choosing x arbitrarily).
+ This is the step that changed the most between the first iteration and this one.
+2 - map and constrain the accel measurement to degree position, and add offset. In the MPU library version, it used a conversion factor of 90 degrees / 9.8 m/s^2. Different formula, same idea.
+
+Almost every tutorial out there insists on scaling down the accel measurement based on the +-G setting, but when you map it like this, it's not much more effort to just work with the raw data as is. Also saves some precision.
+The only reason this commit took so long despite the small code change is that for some reason, at +-2G, 1G of gravity (MPU is at rest) should read about 16384 to ACCEL_OUT. That's why tutorials divide by 16384, that's 1G of gravity. But for some reason my arduino was receiving a value around 4200, nearly a quarter of the normal reading, affecting all axes! It took me a while to even realize this bug was here, and it even tricked me into thinking it was a setting misconfiguration for +-8G. It eventually disappeared, some time around when I tightened all the connections on the breadboard. But I don't even understand how that would affect the 15-12th bits of the data.
+
+This version has one notable flaw. Another item for the todo list: When the offset variable is set to one side, and the MPU is tilted towards the other direction, it cannot reach its full extent of motion in that direction. This is because once the MPU hits a vertical alignment, any further rotation would only decrease the magnitude read by the accelerometer - it cannot produce a number any greater to make up for the counter-rotation of the offset to reach the far end of rotation in that direction.
+
+demo at
+https://youtu.be/uEPOiu9s0O8
