@@ -116,3 +116,4 @@ Notes:
 - Use (*arr)[] when the declaration of the array is in another scope. Remember that (*arr)[] is different from *arr[] (operator precedence)
 - In C, the best len(array) we have is sizeof(arr)/sizeof(arr[0])
 - sq() and sqrt() are built-in funcs
+- The window initializes with a bunch of 0's. Unless you want to complicate the mean and std dev functions to detect init cells and ignore them, the reported stats will be obviuously below actual values. The workaround I'll be using for this is to just SPRINT through the window the first time to populate it quickly, and then slow down the delay's "tickrate" after the first lap.

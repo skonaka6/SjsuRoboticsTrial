@@ -17,6 +17,9 @@ int accel_expected_max = 16384.0; // observed 1G value. Bandaid fix
 const int DATA_WINDOW_SIZE = 128;
 int dataWindow[DATA_WINDOW_SIZE];
 int dataWindowIndex = 0;
+const int DELAY_INITIAL = 10;
+const int DELAY_FINAL = 250;
+int delay_value = DELAY_INITIAL;
 
 void setup(void) {
   Serial.begin(9600);
@@ -83,7 +86,8 @@ void loop() {
   Serial.println(offset);
 
   Serial.println("");
-  delay(250);
+  delay(delay_value);
+  if (dataWindowIndex == DATA_WINDOW_SIZE-1) delay_value = DELAY_FINAL;
 }
 
 void printGyroVariables(){
