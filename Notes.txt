@@ -35,3 +35,13 @@ Giving Access to Serial Ports
 google search says to give User access to Serial Ports
 sudo usermod -a -G dialout $USER
 (Uncertain if this was the issue I had the first time)
+
+
+
+
+# Dev Log I guess
+I read somewhere it is important to give your servos an external power source so as not to draw more current from the arduino than it can provide. So I tried rolling up 4 AA batteries in a paper like a blunt but even with tape and rubber bands holding wires on the terminals it's extremely finnicky and unreliable to hold a circuit without a proper battery holder that I don't have. So following the gimbal example video in the doc, I'll just rely on making it through with low, briefly tested loads on the servos for the project.
+
+This repo has a few example projects I've opened to learn how to use the basic functions and hardwares on an Arduino necessary for this project. 
+
+I forgot about the No Libraries rule applying to the MPU6050, so I ended up making the initial version of the project (starting with the gimbal, will make the turret after I finish the undergrad project) based of an example provided by the MPU library. Oops. Will need to gut the code and replace it with equivalent WIRE functions. At the very least starting from the library will give an idea of what the final product should look and act like, and make the rewriting step easier.
