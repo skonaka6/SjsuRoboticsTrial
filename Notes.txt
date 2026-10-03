@@ -129,3 +129,25 @@ Following the HowToMechatronic tutorial's example, this objective will minimize 
 - Initializing multiple variables uses format /* a=0, b=0, c=0; */. Not /* a,b,c=0 */. Oops
 - During development, I lowered DATA_WINDOW_SIZE to 32 and raised DELAY_FINAL from 250 to 2000. Idea is to relieve monitor output so I can scroll up to the top where the Error values are printed. I don't want to spend time learning writing to file for this just yet. That can be a TODO item.
 
+Here are some measurements of 
+gyro x: -3.34
+errgx: -287.66
+gyro y: -6.01
+errgy: -31.99
+gyro z: -12.79
+errgz: 12.79
+
+Using the dataWindow[128] to measure, we can see how well this error correcting modification does against preventing gyroscopic drift. Below is Serial Monitor output reporting the gyroscopic.x position after 128 loops, the current gyrox MPU measurement (adjusted by /131.0), the mean, and STD DEV of 128 samples
+// Before Error Correction
+gyro:
+x: -114.15	-2.17
+mean = -1.99	std = 0.09
+
+// After Error Correction
+gyro:
+x: 0.34	-0.07
+mean = 0.00	std = 0.00
+
+We see it's incredibly effectively, nearly eliminating the drift. With this, we can comfortably resume using the MPU gyroscopes for controlling the servos.
+
+There is one more step of mixing in a small factor of accelerometer readings to control the servo.write positioning, but this will be put off for the time being as a low priority objective as the Turret does not need to maintain long term fidelity. It'll go to the Todo list, though.

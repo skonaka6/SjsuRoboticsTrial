@@ -60,10 +60,9 @@ void loop() {
   Wire.endTransmission(false);
   Wire.requestFrom(MPU, 6, true);
   // consume the signal
-  gyrox = (Wire.read() << 8 | Wire.read()) / FS_gyro_factor; // for setting +-250 degree/s, divide by 131.0
-  gyroy = (Wire.read() << 8 | Wire.read()) / FS_gyro_factor; 
-  gyroz = (Wire.read() << 8 | Wire.read()) / FS_gyro_factor; 
-
+  gyrox = ((Wire.read() << 8 | Wire.read()) - errgx) / FS_gyro_factor; // for setting +-250 degree/s, divide by 131.0, adjust by err
+  gyroy = ((Wire.read() << 8 | Wire.read()) - errgy) / FS_gyro_factor; 
+  gyroz = ((Wire.read() << 8 | Wire.read()) - errgz) / FS_gyro_factor;
   // Gyro data is in degrees/s. Convert to degrees and add to current rotational position (like adding velo to pos)
   deltaTime = millis()/1000.0 - prevTime;
   prevTime = millis()/1000.0;
@@ -71,7 +70,7 @@ void loop() {
   yrotation = yrotation + gyroy * deltaTime;
   zrotation = zrotation + gyroz * deltaTime;
   // Record datum
-  dataWindow[dataWindowIndex] = accelx;
+  dataWindow[dataWindowIndex] = gyrox;
   dataWindowIndex++;
   if (dataWindowIndex >= DATA_WINDOW_SIZE) dataWindowIndex = 0; // loop back to beginning of window
   /* Print out the values */
@@ -186,6 +185,14 @@ void measureMPUerror(int measurementCount){
     megy += gy / measurementCount;
     megz += gz / measurementCount;
   }
+  // Uncomment these after plugging in that black magic atan formula
+  // errax = meax;
+  // erray = meay;
+  // erraz = meaz;
+  errgx = megx;
+  errgy = megy;
+  errgz = megz;
+
   Serial.println("Error measurements:");
   Serial.print("ax (UNFINISHED): ");
   Serial.println(meax);
