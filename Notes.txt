@@ -45,3 +45,10 @@ I read somewhere it is important to give your servos an external power source so
 This repo has a few example projects I've opened to learn how to use the basic functions and hardwares on an Arduino necessary for this project. 
 
 I forgot about the No Libraries rule applying to the MPU6050, so I ended up making the initial version of the project (starting with the gimbal, will make the turret after I finish the undergrad project) based of an example provided by the MPU library. Oops. Will need to gut the code and replace it with equivalent WIRE functions. At the very least starting from the library will give an idea of what the final product should look and act like, and make the rewriting step easier.
+
+
+#### Gimbal variable tuning
+decreased loop frequency because overwriting terminal hundreds of times per second faster than needed is my pet peeve.
+Also adjusted the var servo_target from using a (180 degrees / 9.8 m/s^2) unit conversion to half that (90 degrees / 9.8 m/s^2). Now it uses the full range of motion (0-180) of the micro servo. Originally I put in 180 degrees thinking that's the max extent expected (to rotate), that should line up with the max expected acceleration measurement (at rest, gravity). Well that turned out to be wrong. It's a lot more obvious when introducing the offset to 'center' the servo at position 90 to start with, but with the old conversion factor, the servo would max out and reach its 0-degree or 180-degree position when the board is rotated only to 45 degree angles. This mean the servo was rotating twice the magnitude of the MPU.
+
+The rotation precision is much better as compared to the initial sketch. I think it's due to swapping around the order of operations (to unit-convert followed by constrain), so that's one extra item off the TODO list.

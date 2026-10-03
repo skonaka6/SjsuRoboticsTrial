@@ -120,7 +120,7 @@ void loop() {
     offset = Serial.parseInt();
   }
   // servo.write(0); // Run one time so I know which direction to attach the servo horn
-  int servo_target = a.acceleration.x * 180.0 / 9.8 + offset; // convert from acceleration to angle
+  int servo_target = a.acceleration.x * 90.0 / 9.8 + offset; // convert from acceleration to angle
   constrain(servo_target, 0, 180);
   servo.write(servo_target);
   Serial.print("servo: ");
@@ -129,5 +129,5 @@ void loop() {
   Serial.println(offset);
 
   Serial.println("");
-  delay(50);
+  delay(250);
 }
