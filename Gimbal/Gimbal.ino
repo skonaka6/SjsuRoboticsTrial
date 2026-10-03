@@ -7,6 +7,7 @@
 
 Adafruit_MPU6050 mpu;
 Servo servo;
+int offset = 90;
 
 void setup(void) {
   Serial.begin(115200);
@@ -115,12 +116,17 @@ void loop() {
   Serial.print(temp.temperature);
   Serial.println(" degC");
 
+  if (Serial.available()){
+    offset = Serial.parseInt();
+  }
   // servo.write(0); // Run one time so I know which direction to attach the servo horn
-  int servo_target = constrain(a.acceleration.x, 0, 9.8);
-  servo_target = servo_target * 180.0 / 9.8; // convert from acceleration to angle
+  int servo_target = a.acceleration.x * 180.0 / 9.8 + offset; // convert from acceleration to angle
+  constrain(servo_target, 0, 180);
   servo.write(servo_target);
   Serial.print("servo: ");
   Serial.println(servo.read());
+  Serial.print("offset: ");
+  Serial.println(offset);
 
   Serial.println("");
   delay(50);
