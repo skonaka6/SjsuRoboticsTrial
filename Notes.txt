@@ -117,3 +117,8 @@ Notes:
 - In C, the best len(array) we have is sizeof(arr)/sizeof(arr[0])
 - sq() and sqrt() are built-in funcs
 - The window initializes with a bunch of 0's. Unless you want to complicate the mean and std dev functions to detect init cells and ignore them, the reported stats will be obviuously below actual values. The workaround I'll be using for this is to just SPRINT through the window the first time to populate it quickly, and then slow down the delay's "tickrate" after the first lap.
+
+
+#### The second servo
+Getting it working is dead simple, it's just copy pasting the servo 1 code lines and fitting it to a different axis.
+The hard part is to change the behavior of both servos to be mirrors of the MPU. The current implementation of just reading G forces is not sufficient for a rotating turret base.

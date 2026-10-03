@@ -7,8 +7,10 @@ const int MPU = 0x68; // MPU I2C address. Confirm with i2c_scanner example
 float gyrox, gyroy, gyroz, accelx, accely, accelz;
 float xrotation, yrotation, zrotation;
 float deltaTime, prevTime = 0;
-Servo servo;
-int servo_target;
+Servo servo1;
+Servo servo2;
+int servo_target1;
+int servo_target2;
 int offset = 90;
 float FS_gyro_factor = 131.0; // change according to MPU +-G setting. Datasheet p32
 float FS_accel_factor = 16384.0; // change according to MPU +-G setting. Datasheet p30
@@ -28,7 +30,8 @@ void setup(void) {
   Wire.write(0x6B); // PWR_MGNT register. Reset this on setup
   Wire.write(0x00); // TODO: experiment with 0b1000_0000. See if this also properly resets
   Wire.endTransmission(true);
-  servo.attach(9);
+  servo1.attach(9);
+  servo2.attach(10);
   Serial.println("Setup Complete");
   delay(100);
   /*
@@ -76,12 +79,17 @@ void loop() {
   if (Serial.available()){
     offset = Serial.parseInt();
   }
-  // servo.write(0); // Run one time so I know which direction to attach the servo horn
-  servo_target = map(accelx, -accel_expected_max, accel_expected_max, -90, 90) + offset;
-  constrain(servo_target, 0, 180);
-  servo.write(servo_target);
-  Serial.print("servo: ");
-  Serial.println(servo.read());
+  // servo2.write(0); // Run one time so I know which direction to attach the servo horn
+  servo_target1 = map(accelx, -accel_expected_max, accel_expected_max, -90, 90) + offset;
+  servo_target2 = map(accely, -accel_expected_max, accel_expected_max, -90, 90) + offset;
+  constrain(servo_target1, 0, 180);
+  constrain(servo_target2, 0, 180);
+  servo1.write(servo_target1);
+  servo2.write(servo_target2);
+  Serial.print("servo1: ");
+  Serial.print(servo1.read());
+  Serial.print("\tservo2: ");
+  Serial.println(servo2.read());
   Serial.print("offset: ");
   Serial.println(offset);
 
