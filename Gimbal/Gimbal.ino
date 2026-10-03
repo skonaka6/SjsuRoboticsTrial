@@ -14,6 +14,10 @@ float FS_gyro_factor = 131.0; // change according to MPU +-G setting. Datasheet 
 float FS_accel_factor = 16384.0; // change according to MPU +-G setting. Datasheet p30
 int accel_expected_max = 16384.0; // observed 1G value. Bandaid fix
 
+const int DATA_WINDOW_SIZE = 128;
+int dataWindow[DATA_WINDOW_SIZE];
+int dataWindowIndex = 0;
+
 void setup(void) {
   Serial.begin(9600);
   Wire.begin();
@@ -58,9 +62,14 @@ void loop() {
   xrotation = xrotation + gyrox * deltaTime;
   yrotation = yrotation + gyroy * deltaTime;
   zrotation = zrotation + gyroz * deltaTime;
+  // Record datum
+  dataWindow[dataWindowIndex] = accelx;
+  dataWindowIndex++;
+  if (dataWindowIndex >= DATA_WINDOW_SIZE) dataWindowIndex = 0; // loop back to beginning of window
   /* Print out the values */
   printAccelVariables();
   // printGyroVariables();
+  printStats();
   if (Serial.available()){
     offset = Serial.parseInt();
   }
@@ -74,7 +83,7 @@ void loop() {
   Serial.println(offset);
 
   Serial.println("");
-  delay(100);
+  delay(250);
 }
 
 void printGyroVariables(){
@@ -102,4 +111,26 @@ void printAccelVariables(){
   Serial.print("z: ");
   Serial.println(accelz);
 
+}
+
+void printStats(){
+  Serial.print("mean = ");
+  Serial.print(calculateMean(&dataWindow));
+  Serial.print("\t");
+  Serial.print("std = ");
+  Serial.println(calculateSTD(&dataWindow));
+}
+
+float calculateMean(int (*arr)[DATA_WINDOW_SIZE]){
+  size_t len = sizeof(*arr) / sizeof((*arr)[0]);
+  long sum = 0;
+  for (int i=0; i < len; i++) sum += (*arr)[i];
+  return sum / (float)len;
+}
+
+float calculateSTD(int (*arr)[DATA_WINDOW_SIZE]){
+  float m = calculateMean(arr);
+  double sum = 0.0;
+  for (int i=0; i<DATA_WINDOW_SIZE; i++) sum += sq((*arr)[i] - m);
+  return sqrt(sum / DATA_WINDOW_SIZE);
 }

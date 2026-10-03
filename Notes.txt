@@ -98,3 +98,21 @@ This version has one notable flaw. Another item for the todo list: When the offs
 
 demo at
 https://youtu.be/uEPOiu9s0O8
+
+
+## Road to Turret Deliverable
+There may be some fixes yet to be made to the Gimbal, but those are rather secondary to getting a working turret.
+
+#### The data window
+One objective is to take one statistic (going to work with accelx) and track the last 128 samples in a rolling window, printing out the mean and standard deviation. This is a rather easy idea to implement:
+1 - establish an array to work as the window int dataWindow[128]
+2 - Use a pointer/index to track next insertion location dataWindowIndex
+3 - record items in the array as normal, but upon reaching the end of the array, set the pointer/index back to position 0 and OVERWRITE old data. This is how we achieve the rolling window effect. If we want to maintain order, we'd use the index every time we read from the array, but mean and std are agnostic to this so we don't need the index beyond this point
+4 - calculate and print mean and std from the array. As straightforward as can be.
+Notes:
+- be careful that the 16b integers can hold SUMs in the calculations. Use Longs if needed
+- function parameter written as for calculateMean(int (*arr)[DATA_WINDOW_SIZE]){}. The array size is in fact needed
+- ...and then you need to pass the address of the array in the function call calculateMean(&dataWindow);
+- Use (*arr)[] when the declaration of the array is in another scope. Remember that (*arr)[] is different from *arr[] (operator precedence)
+- In C, the best len(array) we have is sizeof(arr)/sizeof(arr[0])
+- sq() and sqrt() are built-in funcs
