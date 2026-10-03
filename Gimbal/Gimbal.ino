@@ -1,126 +1,59 @@
-// Basic demo for accelerometer readings from Adafruit MPU6050
+// Rewritten demo from Adafruit's MPU6050 library
 
-#include <Adafruit_MPU6050.h>
-#include <Adafruit_Sensor.h>
 #include <Wire.h>
 #include <Servo.h>
 
-Adafruit_MPU6050 mpu;
+const int MPU = 0x68; // MPU I2C address. Confirm with i2c_scanner example
+float gyrox, gyroy, gyroz;
+float xrotation, yrotation, zrotation;
+float deltaTime, prevTime = 0;
 Servo servo;
+int servo_target;
 int offset = 90;
+float FS_factor = 131.0; // change according to MPU +-G setting. Datasheet p32
 
 void setup(void) {
-  Serial.begin(115200);
-  while (!Serial)
-    delay(10); // will pause Zero, Leonardo, etc until serial console opens
-
-  Serial.println("Adafruit MPU6050 test!");
-
-  // Try to initialize!
-  if (!mpu.begin()) {
-    Serial.println("Failed to find MPU6050 chip");
-    while (1) {
-      delay(10);
-    }
-  }
-  Serial.println("MPU6050 Found!");
-
-  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-  Serial.print("Accelerometer range set to: ");
-  switch (mpu.getAccelerometerRange()) {
-  case MPU6050_RANGE_2_G:
-    Serial.println("+-2G");
-    break;
-  case MPU6050_RANGE_4_G:
-    Serial.println("+-4G");
-    break;
-  case MPU6050_RANGE_8_G:
-    Serial.println("+-8G");
-    break;
-  case MPU6050_RANGE_16_G:
-    Serial.println("+-16G");
-    break;
-  }
-  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-  Serial.print("Gyro range set to: ");
-  switch (mpu.getGyroRange()) {
-  case MPU6050_RANGE_250_DEG:
-    Serial.println("+- 250 deg/s");
-    break;
-  case MPU6050_RANGE_500_DEG:
-    Serial.println("+- 500 deg/s");
-    break;
-  case MPU6050_RANGE_1000_DEG:
-    Serial.println("+- 1000 deg/s");
-    break;
-  case MPU6050_RANGE_2000_DEG:
-    Serial.println("+- 2000 deg/s");
-    break;
-  }
-
-  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
-  Serial.print("Filter bandwidth set to: ");
-  switch (mpu.getFilterBandwidth()) {
-  case MPU6050_BAND_260_HZ:
-    Serial.println("260 Hz");
-    break;
-  case MPU6050_BAND_184_HZ:
-    Serial.println("184 Hz");
-    break;
-  case MPU6050_BAND_94_HZ:
-    Serial.println("94 Hz");
-    break;
-  case MPU6050_BAND_44_HZ:
-    Serial.println("44 Hz");
-    break;
-  case MPU6050_BAND_21_HZ:
-    Serial.println("21 Hz");
-    break;
-  case MPU6050_BAND_10_HZ:
-    Serial.println("10 Hz");
-    break;
-  case MPU6050_BAND_5_HZ:
-    Serial.println("5 Hz");
-    break;
-  }
-
+  Serial.begin(9600);
+  Wire.begin();
+  Wire.beginTransmission(MPU);
+  Wire.write(0x6B); // PWR_MGNT register. Reset this on setup
+  Wire.write(0x00); // TODO: experiment with 0b1000_0000. See if this also properly resets
+  Wire.endTransmission(true);
   servo.attach(9);
-  Serial.println("");
+  Serial.println("Setup Complete");
   delay(100);
+  /*
+  Optionally configure MPU
+  We'll use default +/-2g, +/-250 degree/s
+  */
 }
 
 void loop() {
 
   /* Get new sensor events with the readings */
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
+  //request the signal from GYRO_OUT registers
+  Wire.beginTransmission(MPU);
+  Wire.write(0x43); // GYRO_XOUT_H
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU, 6, true);
+  // consume the signal
+  gyrox = (Wire.read() << 8 | Wire.read()) / FS_factor; // for setting +-250 degree/s, divide by 131.0
+  gyroy = (Wire.read() << 8 | Wire.read()) / FS_factor; 
+  gyroz = (Wire.read() << 8 | Wire.read()) / FS_factor; 
 
+  // Gyro data is in degrees/s. Convert to degrees and add to current rotational position (like adding velo to pos)
+  deltaTime = millis()/1000.0 - prevTime;
+  prevTime = millis()/1000.0;
+  xrotation = xrotation + gyrox * deltaTime;
+  yrotation = yrotation + gyroy * deltaTime;
+  zrotation = zrotation + gyroz * deltaTime;
   /* Print out the values */
-  Serial.print("Acceleration X: ");
-  Serial.print(a.acceleration.x);
-  Serial.print(", Y: ");
-  Serial.print(a.acceleration.y);
-  Serial.print(", Z: ");
-  Serial.print(a.acceleration.z);
-  Serial.println(" m/s^2");
-
-  Serial.print("Rotation X: ");
-  Serial.print(g.gyro.x);
-  Serial.print(", Y: ");
-  Serial.print(g.gyro.y);
-  Serial.print(", Z: ");
-  Serial.print(g.gyro.z);
-  Serial.println(" rad/s");
-
-  Serial.print("Temperature: ");
-  Serial.print(temp.temperature);
-  Serial.println(" degC");
-
+  printGyroVariables();
   if (Serial.available()){
     offset = Serial.parseInt();
   }
   // servo.write(0); // Run one time so I know which direction to attach the servo horn
-  int servo_target = a.acceleration.x * 90.0 / 9.8 + offset; // convert from acceleration to angle
+  servo_target = xrotation + offset;
   constrain(servo_target, 0, 180);
   servo.write(servo_target);
   Serial.print("servo: ");
@@ -130,4 +63,20 @@ void loop() {
 
   Serial.println("");
   delay(250);
+}
+
+void printGyroVariables(){
+  Serial.println();
+  Serial.print("x: ");
+  Serial.print(xrotation);
+  Serial.print("\t");
+  Serial.println(gyrox);
+  Serial.print("y: ");
+  Serial.print(yrotation);
+  Serial.print("\t");
+  Serial.println(gyroy);
+  Serial.print("z: ");
+  Serial.print(zrotation);
+  Serial.print("\t");
+  Serial.println(gyroz);
 }

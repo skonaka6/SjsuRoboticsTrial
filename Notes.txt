@@ -52,3 +52,33 @@ decreased loop frequency because overwriting terminal hundreds of times per seco
 Also adjusted the var servo_target from using a (180 degrees / 9.8 m/s^2) unit conversion to half that (90 degrees / 9.8 m/s^2). Now it uses the full range of motion (0-180) of the micro servo. Originally I put in 180 degrees thinking that's the max extent expected (to rotate), that should line up with the max expected acceleration measurement (at rest, gravity). Well that turned out to be wrong. It's a lot more obvious when introducing the offset to 'center' the servo at position 90 to start with, but with the old conversion factor, the servo would max out and reach its 0-degree or 180-degree position when the board is rotated only to 45 degree angles. This mean the servo was rotating twice the magnitude of the MPU.
 
 The rotation precision is much better as compared to the initial sketch. I think it's due to swapping around the order of operations (to unit-convert followed by constrain), so that's one extra item off the TODO list.
+
+
+#### Removing the MPU Library
+Built-in example i2c_scanner is a convenient way to get the hex address of the MPU: 0x68. I found this example during physical debugging.
+This web page has a very thorough tutorial for almost exactly this project
+https://howtomechatronics.com/tutorials/arduino/arduino-and-mpu6050-accelerometer-and-gyroscope-tutorial/
+Essentially, do the following:
+1 - pull up a datasheet for your MPU, this has register locations. The datasheet document number is listed as RM-MPU-6000A-00 but it's the same information as for 6050. The two apparently have identical specs, the difference being 6000 uses a different communication protocol. Datasheet found here:
+https://cdn.sparkfun.com/datasheets/Sensors/Accelerometers/RM-MPU-6000A.pdf
+2 - in setup(), initialize the WIRE library and reset the sensor to the Power Management Registers (datasheet chapter 3, Address '6B', PWR_MGMT_1) (oh would you look at that there's a TEMP_DIS bit). Should look like Begin transmission -> write register address -> write new register value (0) -> close transmission
+Their tutorial sets the whole register to 0, but the datasheet says you reset all registers by setting the first bit to 1... this is something to experiment with later.
+3 - optionally configure the MPU, i.e. the G value
+4 - in loop, read data from accelerometer/gyro with Wire.write(register_address) and Wire.request(MPU, num_registers, true)
+Data for each access is stored as 16 bits, or two bytes across TWO 8-bit registers, beginning at address 0x3B (see page 7 of datasheet, ACCEL_XOUT_H)
+Datasheet note: _H and _L suffix are High Bits and Low Bits
+TEMP_OUT is sandwiched between Accelerometer and Gyroscope OUTs. That's why some code examples you look up will tell you to read 14 bytes (14 registers) starting from ACCEL_X at 0x3B.
+However if you don't care about TEMP, you can set the reading 'pointer' of the Wire to a new location like a JMP with:
+ Wire.beginTransmission(MPU);
+ Wire.write(0x3B); // Start with register 0x3B (ACCEL_XOUT_H)
+ Wire.endTransmission(false);
+and then read as many n bytes (registers) you want starting from that point with
+ Wire.requestFrom(MPU, 6, true); // Read 6 total registers
+Note that Wire.read() resolves into a single byte read from Wire, which is why we read() twice
+5 - Assemble read data (bit shift) and divide by the LSB Sensitivity according to the table in datasheet page 30, 32
+At Full Scale Range +-2g, divide accelerometer readings by 16384 LSB/g
+At Full Scale Range +-250 */s, divide gyro readings by 131.0 LSB/degree/s
+I don't understand the math behind this yet, or what LSB Sensitivity actually represents (just leave it on default in setup for now()), but these table is enough to work with for now. Add as research question post-project
+6 - Implement error correction or acceleration anti-drift or both. Gyro error is actually instantly detrimental
+
+Tutorial and sample code cover minimizing drift and calculating roll and pitch from accelerometer data with an atan() func. I will try opting out of these parts for now to keep code lean since we don't require a robust solution at the moment.
