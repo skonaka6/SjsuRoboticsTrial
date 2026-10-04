@@ -1,0 +1,73 @@
+Error measurements:
+ax (UNFINISHED): -2173.26
+ay (UNFINISHED): 92.52
+az (UNFINISHED): 16759.92
+gx: -304.40
+gy: -38.94
+gz: 17.18
+
+Setup Complete. Please wait for dataWindow to populate
+...............................................................................................................................accel:
+x: -2188.00
+y: 96.00
+z: 16788.00
+gyro:
+x: -0.03	0.03
+y: 0.03	0.04
+z: -0.03	0.06
+mean = 0.00	std = 0.00
+servo1: 90	servo2: 90
+offset: 90
+
+accel:
+x: -2128.00
+y: 48.00
+z: 16764.00
+gyro:
+x: -0.02	0.03
+y: 0.02	-0.03
+z: -0.06	-0.08
+mean = 0.00	std = 0.00
+servo1: 90	servo2: 90
+offset: 90
+
+accel:
+x: -2172.00
+y: 128.00
+z: 16716.00
+gyro:
+x: -0.00	0.03
+y: -0.00	-0.07
+z: -0.07	-0.02
+mean = 0.00	std = 0.00
+servo1: 90	servo2: 90
+offset: 90
+
+accel:
+x: -2184.00
+y: 160.00
+z: 16796.00
+gyro:
+x: -0.07	-0.17
+y: -0.04	-0.11
+z: -0.07	-0.00
+mean = 0.00	std = 0.00
+servo1: 90	servo2: 90
+offset: 90
+
+accel:
+x: -2168.00
+y: 160.00
+z: 16616.00
+gyro:
+x: -0.06	0.03
+y: -0.05	-0.04
+z: -0.03	0.10
+mean = 0.00	std = 0.00
+servo1: 90	servo2: 90
+offset: 90
+
+accel:
+x: -2192.00
+y: 96.00
+z:

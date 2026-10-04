@@ -16,6 +16,7 @@ int offset = 90;
 float FS_gyro_factor = 131.0; // change according to MPU +-G setting. Datasheet p32
 float FS_accel_factor = 16384.0; // change according to MPU +-G setting. Datasheet p30
 int accel_expected_max = 16384.0; // observed 1G value. Bandaid fix
+bool isPopulatingDataWindow = true; // use this to indicate first pass throuh dataWindow
 
 const int DATA_WINDOW_SIZE = 128;
 int dataWindow[DATA_WINDOW_SIZE];
@@ -34,7 +35,7 @@ void setup(void) {
   servo1.attach(9);
   servo2.attach(10);
   measureMPUerror(200); // 200 samples
-  Serial.println("Setup Complete");
+  Serial.println("Setup Complete. Please wait for dataWindow to populate");
   delay(100);
   /*
   Optionally configure MPU
@@ -74,9 +75,12 @@ void loop() {
   dataWindowIndex++;
   if (dataWindowIndex >= DATA_WINDOW_SIZE) dataWindowIndex = 0; // loop back to beginning of window
   /* Print out the values */
-  printAccelVariables();
-  printGyroVariables();
-  printStats();
+  if (isPopulatingDataWindow) Serial.print(".");
+  else{
+    printAccelVariables();
+    printGyroVariables();
+    printStats();
+  }
   if (Serial.available()){
     offset = Serial.parseInt();
   }
@@ -87,16 +91,21 @@ void loop() {
   constrain(servo_target2, 0, 180);
   servo1.write(servo_target1);
   servo2.write(servo_target2);
-  Serial.print("servo1: ");
-  Serial.print(servo1.read());
-  Serial.print("\tservo2: ");
-  Serial.println(servo2.read());
-  Serial.print("offset: ");
-  Serial.println(offset);
-
-  Serial.println("");
+  if (isPopulatingDataWindow){}
+  else{
+    Serial.print("servo1: ");
+    Serial.print(servo1.read());
+    Serial.print("\tservo2: ");
+    Serial.println(servo2.read());
+    Serial.print("offset: ");
+    Serial.println(offset);
+    Serial.println("");
+  }
   delay(delay_value);
-  if (dataWindowIndex == DATA_WINDOW_SIZE-1) delay_value = DELAY_FINAL;
+  if (dataWindowIndex == DATA_WINDOW_SIZE-1) {
+    delay_value = DELAY_FINAL;
+    isPopulatingDataWindow = false;
+  }
 }
 
 void printGyroVariables(){
