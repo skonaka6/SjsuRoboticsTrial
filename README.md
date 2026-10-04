@@ -1,5 +1,15 @@
+<div style="text-align: center;">
+<img src="images/SJSJTrialRoboticsIcon.webp" width="300" alt="SJSU Robotics Trial Icon">
+</div>
+
 # Demos
+
+<img src="images/Gimbal_thumbnail.jpg" width="300" alt="Gimbail Thumbnail">
+
 Gimbal Project: [https://youtu.be/uEPOiu9s0O8]\
+
+<img src="images/Turret_thumbnail.jpg" width="300" alt="Turret Thumbnail">
+
 Turret Project: [https://youtu.be/SUMPuDCYfl8]\
 \
 This project is for the [Firmware Team Trial Project](https://docs.google.com/document/d/1K0G1oCJ2febqXuc-hIlF5nqjjRxHys7bjBQnMhwjBkk/edit?usp=sharing)
@@ -38,3 +48,4 @@ Here is a list, for the most part in order, of resources used to learn and compl
 - MPU6000A/6050 Datasheet [https://cdn.sparkfun.com/datasheets/Sensors/Accelerometers/RM-MPU-6000A.pdf]
 - A small free video hosting website I put my demos on [youtube.com]
 - Critical hardware for the turret demo: [https://www.reddit.com/r/meme/comments/g2ozv6/i_was_bored_so_i_draw_a_crab_with_knife/]
+</div>
