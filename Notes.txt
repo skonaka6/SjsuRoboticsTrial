@@ -1,4 +1,4 @@
-﻿# Setting up project environment (Arduino IDE)
+# Setting up project environment (Arduino IDE)
 
 Setup:
 1) Download App executable from https://www.arduino.cc/en/software/, give -x perms if needed
@@ -160,3 +160,70 @@ This version has one notable flaw. Another item for the todo list: When the offs
 
 demo at
 https://youtu.be/uEPOiu9s0O8
+
+
+## Road to Turret Deliverable
+There may be some fixes yet to be made to the Gimbal, but those are rather secondary to getting a working turret.
+
+#### The data window
+One objective is to take one statistic (going to work with accelx) and track the last 128 samples in a rolling window, printing out the mean and standard deviation. This is a rather easy idea to implement:
+1 - establish an array to work as the window int dataWindow[128]
+2 - Use a pointer/index to track next insertion location dataWindowIndex
+3 - record items in the array as normal, but upon reaching the end of the array, set the pointer/index back to position 0 and OVERWRITE old data. This is how we achieve the rolling window effect. If we want to maintain order, we'd use the index every time we read from the array, but mean and std are agnostic to this so we don't need the index beyond this point
+4 - calculate and print mean and std from the array. As straightforward as can be.
+Notes:
+- be careful that the 16b integers can hold SUMs in the calculations. Use Longs if needed
+- function parameter written as for calculateMean(int (*arr)[DATA_WINDOW_SIZE]){}. The array size is in fact needed
+- ...and then you need to pass the address of the array in the function call calculateMean(&dataWindow);
+- Use (*arr)[] when the declaration of the array is in another scope. Remember that (*arr)[] is different from *arr[] (operator precedence)
+- In C, the best len(array) we have is sizeof(arr)/sizeof(arr[0])
+- sq() and sqrt() are built-in funcs
+- The window initializes with a bunch of 0's. Unless you want to complicate the mean and std dev functions to detect init cells and ignore them, the reported stats will be obviuously below actual values. The workaround I'll be using for this is to just SPRINT through the window the first time to populate it quickly, and then slow down the delay's "tickrate" after the first lap.
+
+
+#### The second servo
+Getting it working is dead simple, it's just copy pasting the servo 1 code lines and fitting it to a different axis.
+The hard part is to change the behavior of both servos to be mirrors of the MPU. The current implementation of just reading G forces is not sufficient for a rotating turret base.
+
+
+#### Error measurement and correction
+Following the HowToMechatronic tutorial's example, this objective will minimize the error, and hopefully drift introduced by the finite accuracy of the MPU hardware. The plan is to find the avg of n measurement samples from the IMU at rest, and then offset any future measurements at runtime to compute a value closer to true values.
+- Initializing multiple variables uses format /* a=0, b=0, c=0; */. Not /* a,b,c=0 */. Oops
+- During development, I lowered DATA_WINDOW_SIZE to 32 and raised DELAY_FINAL from 250 to 2000. Idea is to relieve monitor output so I can scroll up to the top where the Error values are printed. I don't want to spend time learning writing to file for this just yet. That can be a TODO item.
+
+Here are some measurements of 
+gyro x: -3.34
+errgx: -287.66
+gyro y: -6.01
+errgy: -31.99
+gyro z: -12.79
+errgz: 12.79
+
+Using the dataWindow[128] to measure, we can see how well this error correcting modification does against preventing gyroscopic drift. Below is Serial Monitor output reporting the gyroscopic.x position after 128 loops, the current gyrox MPU measurement (adjusted by /131.0), the mean, and STD DEV of 128 samples
+// Before Error Correction
+gyro:
+x: -114.15	-2.17
+mean = -1.99	std = 0.09
+
+// After Error Correction
+gyro:
+x: 0.34	-0.07
+mean = 0.00	std = 0.00
+
+We see it's incredibly effectively, nearly eliminating the drift. With this, we can comfortably resume using the MPU gyroscopes for controlling the servos.
+
+There is one more step of mixing in a small factor of accelerometer readings to control the servo.write positioning, but this will be put off for the time being as a low priority objective as the Turret does not need to maintain long term fidelity. It'll go to the Todo list, though.
+
+
+#### Finishing the project
+PROJECT DEMO AT
+https://youtu.be/SUMPuDCYfl8
+
+The last critical change is controlling servo position with gyroscope measurements instead of accelerometer. This turns out to be a trivial change, as the code for it was implemented as early as in the Gimbal project. So all that had to be done was change
+servo.write(accelx) to servo.write(xrotation)
+now that error reduction code made gyro-based control feasible to use.
+As can be seen in the video, there is still some drift. Supposedly accelerometer data fed through an atan() can correct positioning long term, but I don't understand the math of it well enough to comfortably include in my code yet.
+I decreased the main loop delay / increased frequency. Not only does the responsiveness look better for the demo, but unintuitively, lower responsiveness is more susceptible to drift.
+
+The crab came from here
+https://www.reddit.com/r/meme/comments/g2ozv6/i_was_bored_so_i_draw_a_crab_with_knife/
