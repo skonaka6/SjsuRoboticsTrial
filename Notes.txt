@@ -151,3 +151,17 @@ mean = 0.00	std = 0.00
 We see it's incredibly effectively, nearly eliminating the drift. With this, we can comfortably resume using the MPU gyroscopes for controlling the servos.
 
 There is one more step of mixing in a small factor of accelerometer readings to control the servo.write positioning, but this will be put off for the time being as a low priority objective as the Turret does not need to maintain long term fidelity. It'll go to the Todo list, though.
+
+
+#### Finishing the project
+PROJECT DEMO AT
+https://youtu.be/SUMPuDCYfl8
+
+The last critical change is controlling servo position with gyroscope measurements instead of accelerometer. This turns out to be a trivial change, as the code for it was implemented as early as in the Gimbal project. So all that had to be done was change
+servo.write(accelx) to servo.write(xrotation)
+now that error reduction code made gyro-based control feasible to use.
+As can be seen in the video, there is still some drift. Supposedly accelerometer data fed through an atan() can correct positioning long term, but I don't understand the math of it well enough to comfortably include in my code yet.
+I decreased the main loop delay / increased frequency. Not only does the responsiveness look better for the demo, but unintuitively, lower responsiveness is more susceptible to drift.
+
+The crab came from here
+https://www.reddit.com/r/meme/comments/g2ozv6/i_was_bored_so_i_draw_a_crab_with_knife/

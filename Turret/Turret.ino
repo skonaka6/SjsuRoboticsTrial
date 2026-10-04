@@ -80,9 +80,9 @@ void loop() {
   if (Serial.available()){
     offset = Serial.parseInt();
   }
-  // servo2.write(0); // Run one time so I know which direction to attach the servo horn
-  servo_target1 = map(accelx, -accel_expected_max, accel_expected_max, -90, 90) + offset;
-  servo_target2 = map(accely, -accel_expected_max, accel_expected_max, -90, 90) + offset;
+  // servo1.write(0); // Run one time so I know which direction to attach the servo horn
+  servo_target1 = map(zrotation, -90, 90, -90, 90) + offset;
+  servo_target2 = map(xrotation, -90, 90, -90, 90) + offset;
   constrain(servo_target1, 0, 180);
   constrain(servo_target2, 0, 180);
   servo1.write(servo_target1);
