@@ -1,0 +1,11 @@
+TODO items
+Accelerometer-based rotation cannot fully rotate a direction when reduced by offset due to MPU producing maximum value at vertical alignment.
+
+
+
+Research questions
+
+CAN protocol
+MPU 6000/6050 datasheet page 30 table: what is LSB Sensitivity? what determines these values that we have to divide our measurement numbers by? And what is Full Scale Range
+Why is only Yaw Drift not correctable?
+What are the bool parameters for Wire.endTransmission() and Wire.requestFrom()?
